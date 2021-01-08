@@ -1,11 +1,13 @@
 package net
 
 import (
-	"encoding/json"
 	"fmt"
 	"net"
 	"strings"
 )
+
+
+
 
 func NewTcpListen(address string)  net.Listener {
 	tcp, err := net.Listen("tcp", address)
@@ -96,7 +98,7 @@ func readConn(conn net.Conn, readChan chan<- string, stopChan chan<- bool) {
 func writeConn(conn net.Conn, writeChan <-chan string, stopChan chan<- bool) {
 	for {
 		strData := <-writeChan
-		err := WriteTCP(1,[]byte(strData),conn)
+		err := Write(2301,[]byte(strData),conn)
 		if err != nil {
 			fmt.Println(err)
 			break
@@ -109,19 +111,22 @@ func writeConn(conn net.Conn, writeChan <-chan string, stopChan chan<- bool) {
 }
 
 
-func WriteTCP(operation byte, w []byte, conn net.Conn) (err error) {
-	var ( //operation 包头信息，w包主体信息，
-		length = len(string(w))
-		buf    = make([]byte, length+5)
+func Write(msgCode int32, msgData []byte, conn net.Conn) (err error) {
+	var ( //operation 包头信息，msgData包主体信息，
+		length = len(string(msgData))
+		buf    = make([]byte, length+8)
+		code = []byte(fmt.Sprintf("%d",msgCode))
 	)
 
-	buf[0] = operation
-	buf[1] = byte(uint32(length))
-	buf[2] = byte(uint32(length) >> 8)
-	buf[3] = byte(uint32(length) >> 16)
-	buf[4] = byte(uint32(length) >> 24)
-	copy(buf[5:], w)
-	println("len buf: ", len(buf))
+	//验证协议是否合法
+	if msgCode < int32(MinCode) || msgCode > int32(MaxCode) {
+		return
+	}
+
+	//封装协议
+	Encode(buf,code,msgData,length)
+
+	//发送消息
 	if _, err = conn.Write(buf); err != nil {
 		print("conn.Write(%s), failed(%s)", string(buf), err)
 		return
@@ -129,43 +134,27 @@ func WriteTCP(operation byte, w []byte, conn net.Conn) (err error) {
 	return
 }
 
-type Users struct {
-	UserName string
-	Age int32
-	Sex string
-}
-
-func HandleClient(conn net.Conn) {
+func Handle(conn net.Conn) {
 	defer conn.Close()
 	for {
-		var (
-			buf [502]byte
-		)
-		_, err := conn.Read(buf[0:5])
+		//解析消息号
+		msgCode, lens, err := DecodeRead(conn)
 		if err != nil {
 			return
 		}
-		lens := int(uint32(buf[1]) | uint32(buf[2])<<8 | uint32(buf[3])<<16 | uint32(buf[4])<<24)
-		fmt.Println("lens:", lens)
-		from := conn.RemoteAddr()
-		fmt.Println("from: ", from)
-		switch buf[0] {
-		case 1:
-			_, err = conn.Read(buf[0:lens])
-			if err != nil {
-				print("conn.Read() failed(%s)", err)
-				continue
-			}
-			fmt.Println("buf:  ", string(buf[0:lens]))
-			user := &Users{}
-			json.Unmarshal(buf[0:lens],&user)
-			fmt.Println("userName:  ",user.UserName )
-			fmt.Println("age:  ",user.Age )
-			fmt.Println("sex:  ",user.Sex )
-
-		default:
-			print("no data!!")
+		var buf = make([]byte,lens)
+		_, err = conn.Read(buf[0:lens])
+		if err != nil {
+			fmt.Printf("conn.Read() failed(%s)", err)
+			continue
 		}
+
+		//将消息进行封装转发至通道
+		msg := Message{
+			Code: msgCode,
+			Body: buf[0:lens],
+		}
+		fmt.Println(msg.Code, string(msg.Body))
 	}
 	return
 }
