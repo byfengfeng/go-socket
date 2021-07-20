@@ -3,7 +3,7 @@ package net
 import "net"
 
 type Message struct {
-	Code int32
+	Code uint16
 	Body []byte
 	Connect net.Conn
 }

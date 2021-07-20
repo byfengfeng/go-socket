@@ -9,13 +9,37 @@ import (
 	"html/template"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 )
 
 
 func main() {
+
+	var code uint16
+	code = 12001
+	bytes := make([]byte,0)
+	//bytes = append(bytes,byte(code>>8),byte(code))
+	//测试实体
+	body := &pb.ResMailChange{
+		MailChangeType: int32(3),
+		MailId: []int64{23001},
+	}
+	data, _ := proto.Marshal(body)
+	//封code
+	bytes = append(bytes,byte(code>>8),byte(code))
+	//封长度
+	length := uint16(len(data))
+	bytes = append(bytes,byte(length>>8),byte(length))
+	//封内容
+	bytes = append(bytes,data...)
+	newCode := uint16(bytes[0])<<8 | uint16(bytes[1])
+	newLength := uint16(bytes[2])<<8 | uint16(bytes[3])
+	resMailChange := pb.ResMailChange{}
+	if code == newCode {
+		proto.Unmarshal(bytes[4:4+newLength],&resMailChange)
+	}
+	fmt.Println(resMailChange)
 	//var a  = 2048
 	////for {
 	//	c := string(a)
@@ -39,7 +63,7 @@ func main() {
 	//reqChan := make(chan *net.Message)
 	//resChan := make(chan *net.Message)
 	//go client(resChan)
-	//tcp := net.NewTcpListen("192.168.3.156:30000",reqChan,resChan)
+	//tcp := net.NewTcpListen("192.168.31.107:30011",reqChan,resChan)
 	//go func(){
 	//	for  {
 	//		v := <- reqChan
@@ -50,9 +74,9 @@ func main() {
 	//		proto.Unmarshal(v.Body,notifi)
 	//		fmt.Println(notifi.MailId)
 	//		fmt.Println(notifi.MailChangeType)
-	//		//v.Code = v.Code + 10
-	//		//v.Body = []byte(fmt.Sprint("回复消息"))
-	//		//resChan <- v
+	//		v.Code = v.Code + 10
+	//		v.Body = []byte(fmt.Sprint("回复消息"))
+	//		resChan <- v
 	//	}
 	//
 	//}()
@@ -60,13 +84,16 @@ func main() {
 	//net.SocketListenEvent(tcp, net.Handle)
 
 	//WEBSOCKET测试
-	http.Handle("/upper", websocket.Handler(upper))
-	http.HandleFunc("/", index)
+	//http.Handle("/upper", websocket.Handler(upper))
+	//http.HandleFunc("/", index)
+	//
+	//if err := http.ListenAndServe(":9999", nil); err != nil {
+	//	fmt.Println(err)
+	//	os.Exit(1)
+	//}
 
-	if err := http.ListenAndServe(":9999", nil); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+
+	TestLocation()
 }
 
 var i = 0
@@ -152,16 +179,27 @@ func getbys(data interface{}) ([]byte, error) {
 
 //}
 
-
+func TestLocation()  {
+	var code uint16
+	code = 12345
+	bytes := append([]byte{},byte(code>>8),byte(code))
+	newCode := uint16(bytes[0])<<8| uint16(bytes[1])
+	fmt.Println(newCode)
+	fmt.Println()
+}
 
 func client(data chan *net.Message)  {
 	time.Sleep(time.Second *3)
-	tcpDial := net.NewTcpDial("192.168.3.156:30000")
+	tcpDial := net.NewTcpDial("192.168.31.107:30011")
 	notifi := &pb.ResMailChange{
 			MailChangeType: int32(3),
 			MailId: []int64{23001},
 		}
 	marshal, _ := proto.Marshal(notifi)
+	//message := proto.Message{
+	//
+	//}
+	//message.Reset()
 	//users := "1"
 	//for j:=2; j < 50; j++{
 	//	users+=fmt.Sprint(j)
@@ -169,7 +207,7 @@ func client(data chan *net.Message)  {
 	for i:=1; i <= 10; i++ {
 		//marshal, _ := json.Marshal(users)
 		data <- &net.Message{
-			Code: int32(1000+i),
+			Code: 1000,
 			Connect: tcpDial,
 			Body: marshal,
 		}

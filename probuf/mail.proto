@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package com.game.pb;
+option java_package ="com.game.pb";
+option csharp_namespace = "com.game.pb.mail";
+
+
+message MailInfo {
+     int64 mailId = 1;  //邮件id
+	 string mailName = 2; //邮件名
+	 string mailFrom = 3; //发件人
+	 string mailContent = 4; //邮件内容
+	 repeated Enclosure mailEnclosures = 5; //附件
+	 bool isMailReceive = 6; //邮件是否领取
+	 bool isMailRead = 7; //邮件是否已读
+	 int64 mailFromTime = 8; //发件时间
+	 int32 enclosuresOverdueTime = 9; //邮件过期时间
+}
+
+message Enclosure {
+	int32 propId = 1; //道具模板ID
+	int32 count = 2; //道具数量
+}
+
+// messageCode=23001
+message ReqMails {
+}
+// messageCode=23001
+message ResMails {
+	repeated MailInfo mailInfoList = 1; //用户个人所有邮件
+}
+
+// messageCode=23002
+message ResMailNotifi{
+	MailInfo mailInfo = 1; //邮件
+}
+
+//msg code: 23003
+message ReqMailChange{
+	int32 mailChangeType = 1; //邮件操作类型  1:删除邮件  2:领取附件 3:已读邮件  4：一键清理 5:一键领取附件并设置已读和已领
+    int64 mailId = 2;  //邮件id
+}
+//msg code: 23003
+message ResMailChange{
+	int32 mailChangeType = 1; //邮件操作类型  1:删除邮件  2:领取附件 3:已读邮件  4：一键清理 5:一键领取附件并设置已读和已领
+    repeated int64 mailId = 2;  //邮件id
+}
+
+

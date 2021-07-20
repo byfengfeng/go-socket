@@ -58,18 +58,19 @@ func Write() (err error) {
 		m := <-res
 		if m != nil {
 			var ( //msgCode 包头信息，msgData包主体信息，
-				length = len(string(m.Body))
-				buf    = make([]byte, length+8)
-				code   = []byte(fmt.Sprintf("%d", m.Code))
+				length = uint16(len(string(m.Body)))
+
+				buf    = make([]byte, length+4)
+				//bytes  = make([]byte,2)
 			)
 
 			//验证协议是否合法
-			if m.Code < int32(MinCode) || m.Code > int32(MaxCode) {
+			if m.Code < uint16(MinCode) || m.Code > uint16(MaxCode+2) {
 				return
 			}
-
+			//bytes = append(bytes[0:],byte(m.Code>>8),byte(m.Code))
 			//封装协议
-			Encode(buf, code, m.Body, length)
+			Encode(m.Code, buf, m.Body, length)
 			//发送消息
 			if _, err = m.Connect.Write(buf); err != nil {
 				print("conn.Write(%s), failed(%s)", string(buf), err)
@@ -77,7 +78,7 @@ func Write() (err error) {
 			}
 		}
 	}
-	return
+	//return
 }
 
 func Handle(conn net.Conn) {
@@ -88,6 +89,7 @@ func Handle(conn net.Conn) {
 		if err != nil {
 			return
 		}
+
 		var buf = make([]byte,lens)
 		_, err = conn.Read(buf[0:lens])
 		if err != nil {
@@ -102,5 +104,5 @@ func Handle(conn net.Conn) {
 			Connect: conn,
 		}
 	}
-	return
+
 }
