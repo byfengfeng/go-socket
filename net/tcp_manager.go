@@ -2,6 +2,7 @@ package net
 
 import (
 	"fmt"
+	_interface "game_frame/interface"
 	"net"
 )
 
@@ -11,7 +12,7 @@ type tcpListen struct {
 	handleConn   func(conn net.Conn)
 }
 
-func NewTcpListenManager(address string, handleConn func(conn net.Conn)) *tcpListen {
+func NewTcpListenManager(address string, handleConn func(conn net.Conn)) _interface.ITcpManager {
 	return &tcpListen{
 		address: address,
 		handleConn: handleConn,
@@ -19,11 +20,11 @@ func NewTcpListenManager(address string, handleConn func(conn net.Conn)) *tcpLis
 }
 
 func (tcpListen *tcpListen) StartTcpListen()  error {
-	tcpAddr, err := net.ResolveTCPAddr("tcp", tcpListen.address)
+	tcpAddr, err := net.ResolveTCPAddr(tcpListen.address, tcpListen.address)
 	if err != nil {
 		return err
 	}
-	tcpListen.listener, err = net.ListenTCP("tcp", tcpAddr)
+	tcpListen.listener, err = net.ListenTCP(tcpListen.address, tcpAddr)
 	if err != nil {
 		return err
 	}
@@ -44,7 +45,7 @@ func (tcpListen *tcpListen) StartTcpListen()  error {
 	return nil
 }
 
-func (tcpListen *tcpListen) close()  {
+func (tcpListen *tcpListen) Close()  {
 	tcpListen.listener.Close()
 }
 
