@@ -1,13 +1,45 @@
 package main
+
+import (
+	"fmt"
+	"game_frame/nets"
+	"game_frame/tcp_channel/channel"
+	"game_frame/tcp_channel/channel_manager"
+	"net"
+	"time"
+)
+
+func main() {
+	channelManager := channel_manager.NewChannelManager()
+
+	manager := nets.NewTcpListenManager("192.168.0.1:30000", func(conn net.Conn) {
+		channelManager.AddChannel(channel.NewChannel(conn),int64(len(channelManager.GetchannelManager()))+1)
+		fmt.Println(len(channelManager.GetchannelManager()))
+	})
+	manager.StartTcpListen()
+	time.Sleep(5 * time.Second)
+	go func() {
+		for i:= 0; i < 5001; i++ {
+			net.Dial("tcp","192.168.0.1:30000")
+		}
+	}()
+
+
+	//fmt.Println(len(channelManager.GetchannelManager()))
+	<-make(chan struct{})
+}
+
+
+
 //
 //import (
 //	"fmt"
 //	"github.com/gogo/protobuf/proto"
-//	"golang.org/x/net/websocket"
+//	"golang.org/x/nets/websocket"
 //	"html/template"
 //	"io"
-//	"net"
-//	"net/http"
+//	"nets"
+//	"nets/http"
 //	"strings"
 //	"time"
 //)
@@ -59,10 +91,10 @@ package main
 //	//
 //
 //	//TCP测试
-//	//reqChan := make(chan *net.Message)
-//	//resChan := make(chan *net.Message)
+//	//reqChan := make(chan *nets.Message)
+//	//resChan := make(chan *nets.Message)
 //	//go client(resChan)
-//	//tcp := net.NewTcpListen("192.168.31.107:30011",reqChan,resChan)
+//	//tcp := nets.NewTcpListen("192.168.31.107:30011",reqChan,resChan)
 //	//go func(){
 //	//	for  {
 //	//		v := <- reqChan
@@ -80,7 +112,7 @@ package main
 //	//
 //	//}()
 //	//defer tcp.Close()
-//	//net.SocketListenEvent(tcp, net.Handle)
+//	//nets.SocketListenEvent(tcp, nets.Handle)
 //
 //	//WEBSOCKET测试
 //	//http.Handle("/upper", websocket.Handler(upper))
@@ -187,9 +219,9 @@ package main
 //	fmt.Println()
 //}
 //
-//func client(data chan *net.Message)  {
+//func client(data chan *nets.Message)  {
 //	time.Sleep(time.Second *3)
-//	tcpDial := net.NewTcpDial("192.168.31.107:30011")
+//	tcpDial := nets.NewTcpDial("192.168.31.107:30011")
 //	notifi := &pb.ResMailChange{
 //			MailChangeType: int32(3),
 //			MailId: []int64{23001},
@@ -205,13 +237,13 @@ package main
 //	//}
 //	for i:=1; i <= 10; i++ {
 //		//marshal, _ := json.Marshal(users)
-//		data <- &net.Message{
+//		data <- &nets.Message{
 //			Code: 1000,
 //			Connect: tcpDial,
 //			Body: marshal,
 //		}
 //	}
 //	for  {
-//		net.Handle(tcpDial)
+//		nets.Handle(tcpDial)
 //	}
 //}

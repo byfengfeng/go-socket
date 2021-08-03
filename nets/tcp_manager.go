@@ -1,4 +1,4 @@
-package net
+package nets
 
 import (
 	"fmt"
@@ -20,11 +20,11 @@ func NewTcpListenManager(address string, handleConn func(conn net.Conn)) _interf
 }
 
 func (tcpListen *tcpListen) StartTcpListen()  error {
-	tcpAddr, err := net.ResolveTCPAddr(tcpListen.address, tcpListen.address)
+	tcpAddr, err := net.ResolveTCPAddr("tcp", tcpListen.address)
 	if err != nil {
 		return err
 	}
-	tcpListen.listener, err = net.ListenTCP(tcpListen.address, tcpAddr)
+	tcpListen.listener, err = net.ListenTCP("tcp", tcpAddr)
 	if err != nil {
 		return err
 	}
@@ -42,6 +42,7 @@ func (tcpListen *tcpListen) StartTcpListen()  error {
 			tcpListen.handleConn(conn)
 		}
 	}()
+	fmt.Println("tcp listener start")
 	return nil
 }
 
