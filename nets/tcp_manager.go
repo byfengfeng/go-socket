@@ -34,7 +34,7 @@ func (tcpListen *tcpListen) StartTcpListen()  error {
 				fmt.Println("listener", fmt.Errorf("%s", err))
 			}
 		}()
-		for  {
+		for {
 			conn, err := tcpListen.listener.AcceptTCP()
 			if err != nil {
 				fmt.Println("stop listener", fmt.Errorf("%s", err))

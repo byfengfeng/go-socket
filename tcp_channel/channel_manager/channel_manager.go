@@ -1,7 +1,6 @@
 package channel_manager
 
 import (
-	//_interface "game_frame/interface"
 	"game_frame/tcp_channel/channel"
 	"sync"
 )
@@ -19,9 +18,9 @@ func NewChannelManager() *channelManager {
 
 //添加连接
 func (c *channelManager) AddChannel(channel *channel.Channel,uid int64)  {
-	c.channelMtx.RLock()
+	c.channelMtx.Lock()
 	c.channelMap[uid] = channel
-	c.channelMtx.RUnlock()
+	c.channelMtx.Unlock()
 
 }
 
