@@ -21,6 +21,7 @@ func (c *channelManager) AddChannel(channel *channel.Channel,uid int64)  {
 	c.channelMtx.Lock()
 	c.channelMap[uid] = channel
 	c.channelMtx.Unlock()
+	channel.Start()
 
 }
 

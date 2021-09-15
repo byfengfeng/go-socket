@@ -12,7 +12,7 @@ import (
 func main() {
 	channelManager := channel_manager.NewChannelManager()
 
-	manager := nets.NewTcpListenManager("192.168.0.1:30000", func(conn net.Conn) {
+	manager := nets.NewTcpListenManager("192.168.124.50:30000", func(conn net.Conn) {
 		channelManager.AddChannel(channel.NewChannel(conn),int64(len(channelManager.GetchannelManager()))+1)
 		fmt.Println(len(channelManager.GetchannelManager()))
 	})
@@ -20,7 +20,19 @@ func main() {
 	time.Sleep(5 * time.Second)
 	go func() {
 		for i:= 0; i < 5001; i++ {
-			net.Dial("tcp","192.168.0.1:30000")
+			dial, err := net.Dial("tcp", "192.168.124.50:30000")
+			if err != nil {
+				fmt.Println("链接失败")
+			}
+
+			var code uint16
+			code = 2121
+			bytes := make([]byte,0)
+			bytes = append(bytes,byte(code>>8),byte(code))
+			_, err = dial.Write(bytes)
+			if err != nil {
+				fmt.Println("写入失败失败")
+			}
 		}
 	}()
 
