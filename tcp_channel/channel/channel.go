@@ -29,7 +29,6 @@ func (c *Channel) write() (err error) {
 			}
 		}
 	}
-	return err
 }
 
 func (c *Channel) read() (err error) {
@@ -55,10 +54,6 @@ func (c *Channel) read() (err error) {
 		}
 		c.ReadChan <- body
 	}
-	if err != nil {
-		return
-	}
-	return nil
 }
 
 func (c *Channel) Start()  {
