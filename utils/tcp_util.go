@@ -14,3 +14,4 @@ func Encode(code uint16, data []byte) (bytes []byte) {
 	bytes = append(bytes,data...)
 	return
 }
+

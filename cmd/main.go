@@ -1,33 +1,107 @@
 package main
 
 import (
+	"container/list"
 	"fmt"
-	"game_frame/nets"
-	"game_frame/tcp_channel/channel"
-	"game_frame/tcp_channel/channel_manager"
-	"net"
-	"time"
+	"math"
+	"sync"
 )
 
-func main() {
-	channelManager := channel_manager.NewChannelManager()
-
-	manager := nets.NewTcpListenManager("192.168.0.1:30000", func(conn net.Conn) {
-		channelManager.AddChannel(channel.NewChannel(conn),int64(len(channelManager.GetchannelManager()))+1)
-		fmt.Println(len(channelManager.GetchannelManager()))
-	})
-	manager.StartTcpListen()
-	time.Sleep(5 * time.Second)
-	go func() {
-		for i:= 0; i < 5001; i++ {
-			net.Dial("tcp","192.168.0.1:30000")
-		}
-	}()
-
-
-	//fmt.Println(len(channelManager.GetchannelManager()))
-	<-make(chan struct{})
+type Test struct {
+	name string
+	age uint16
 }
+
+var(
+	pool = sync.Pool{
+		New: func() interface{} {
+			return &Test{
+				age: 18,
+			}
+		},
+	}
+)
+
+
+
+func main() {
+	//TODO
+	//str := pool.Get().(*Test)
+	//fmt.Println(str.age)
+	//str.age = 20
+	//pool.Put(str)
+	//str1 := pool.Get().(*Test)
+	//fmt.Println("str1:",str1)
+	// Test
+	//channelManager := channel_manager.NewChannelManager()
+
+	//manager := nets.NewTcpListenManager("192.168.0.1:30000", func(conn net.Conn) {
+	//	channel :=  channel.NewChannel(conn)
+	//	channel.Start()
+	//})
+	//manager.StartTcpListen()
+	//time.Sleep(5 * time.Second)
+	//go func() {
+	//	for i:= 0; i < 5001; i++ {
+	//		net.Dial("tcp","192.168.0.1:30000")
+	//	}
+	//}()
+	data := 0
+
+	for i:= 0; i < 32; i++ {
+		//&=^(1 << i) 第i位清0 ， |= 1 << i第i为改1
+		data |= 1 << i
+		fmt.Printf("%b\n",data)
+		fmt.Printf("%d\n",data)
+		if i == 22 {
+			data &= ^(1 << 5)
+			fmt.Printf("abc%b\n",data)
+		}
+
+	}
+
+	//str := "1010000000"
+	//a := str[0]
+	////位运算
+	//fmt.Println(BinaryConversionDecimal("1010"))
+	//fmt.Println(DecimalConversionBinary(BinaryConversionDecimal("1010")))
+	//fmt.Println(len(channelManager.GetchannelManager()))
+	//<-make(chan struct{})
+}
+
+func BinaryConversionDecimal(binary string) int32 {
+	stack:=list.New()
+
+	var sum int
+	var stNum,coNum float64=0,2
+
+	for _, c := range binary{
+		//入栈type rune
+		stack.PushBack(c)
+	}
+
+	//出栈
+	for e := stack.Back(); e != nil; e = e.Prev(){
+		//rune是int32的别名
+		v:=e.Value.(int32)
+		sum+=int(v-48)*int(math.Pow(coNum,stNum))
+		stNum++
+	}
+	return int32(sum)
+}
+
+func DecimalConversionBinary(decimal int32) string {
+	return fmt.Sprintf("%b",decimal)
+}
+
+func TestAuth()  {
+	//num := 11
+	//for i:= 0; i < num; i++ {
+	//	strconv.
+	//}
+}
+
+
 
 
 

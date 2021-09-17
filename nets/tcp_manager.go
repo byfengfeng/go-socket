@@ -28,6 +28,7 @@ func (tcpListen *tcpListen) StartTcpListen()  error {
 	if err != nil {
 		return err
 	}
+	defer tcpListen.Close()
 	go func() {
 		defer func() {
 			if err := recover(); err != nil {
