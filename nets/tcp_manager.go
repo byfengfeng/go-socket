@@ -3,6 +3,7 @@ package nets
 import (
 	"fmt"
 	_interface "game_frame/interface"
+	"game_frame/tcp_channel/channel_manager"
 	"net"
 )
 
@@ -10,12 +11,14 @@ type tcpListen struct {
 	address string
 	listener *net.TCPListener
 	handleConn   func(conn net.Conn)
+	channelMap	 *channel_manager.ChannelManager
 }
 
 func NewTcpListenManager(address string, handleConn func(conn net.Conn)) _interface.ITcpManager {
 	return &tcpListen{
 		address: address,
 		handleConn: handleConn,
+		channelMap: channel_manager.NewChannelManager(),
 	}
 }
 
@@ -28,7 +31,6 @@ func (tcpListen *tcpListen) StartTcpListen()  error {
 	if err != nil {
 		return err
 	}
-	defer tcpListen.Close()
 	go func() {
 		defer func() {
 			if err := recover(); err != nil {

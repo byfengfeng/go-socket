@@ -7,19 +7,30 @@ import (
 
 type Channel struct {
 	Conn net.Conn
+	ConnState ConnState
 	ReadChan chan []byte
 	WriteChan chan []byte
 }
+
+type ConnState uint8
+
+const(
+	Online ConnState = iota
+	Offline
+	Disconnected
+)
 
 func NewChannel(conn net.Conn) *Channel {
 	return &Channel{
 		Conn: conn,
 		ReadChan: make(chan []byte),
 		WriteChan: make(chan []byte),
+		ConnState: Online,
 	}
 }
 
 func (c *Channel) write() (err error) {
+	defer c.Close()
 	for  {
 		bytes := <- c.WriteChan
 		if len(bytes) > 0 {
@@ -32,6 +43,7 @@ func (c *Channel) write() (err error) {
 }
 
 func (c *Channel) read() (err error) {
+	defer c.Close()
 	var(
 		headByte []byte
 		length uint16
@@ -59,4 +71,10 @@ func (c *Channel) read() (err error) {
 func (c *Channel) Start()  {
 	go c.read()
 	go c.write()
+}
+
+func (c *Channel) Close()  {
+	close(c.ReadChan)
+	close(c.WriteChan)
+	c.Conn.Close()
 }

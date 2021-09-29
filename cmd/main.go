@@ -3,8 +3,12 @@ package main
 import (
 	"container/list"
 	"fmt"
+	"game_frame/nets"
+	"game_frame/tcp_channel/channel"
 	"math"
+	"net"
 	"sync"
+	"time"
 )
 
 type Test struct {
@@ -34,31 +38,37 @@ func main() {
 	//fmt.Println("str1:",str1)
 	// Test
 	//channelManager := channel_manager.NewChannelManager()
-
-	//manager := nets.NewTcpListenManager("192.168.0.1:30000", func(conn net.Conn) {
-	//	channel :=  channel.NewChannel(conn)
-	//	channel.Start()
-	//})
-	//manager.StartTcpListen()
-	//time.Sleep(5 * time.Second)
-	//go func() {
-	//	for i:= 0; i < 5001; i++ {
-	//		net.Dial("tcp","192.168.0.1:30000")
-	//	}
-	//}()
-	data := 0
-
-	for i:= 0; i < 32; i++ {
-		//&=^(1 << i) 第i位清0 ， |= 1 << i第i为改1
-		data |= 1 << i
-		fmt.Printf("%b\n",data)
-		fmt.Printf("%d\n",data)
-		if i == 22 {
-			data &= ^(1 << 5)
-			fmt.Printf("abc%b\n",data)
+	i := 0
+	manager := nets.NewTcpListenManager("192.168.31.134:30000", func(conn net.Conn) {
+		channel :=  channel.NewChannel(conn)
+		channel.Start()
+		i++
+		fmt.Println(i)
+	})
+	manager.StartTcpListen()
+	time.Sleep(5 * time.Second)
+	go func() {
+		for i:= 0; i < 2000; i++ {
+			_, err := net.Dial("tcp", "192.168.31.134:30000")
+			if err != nil {
+				panic("链接失败")
+			}
+			//dial.Close()
 		}
-
-	}
+	}()
+	//data := 0
+	//
+	//for i:= 0; i < 32; i++ {
+	//	//&=^(1 << i) 第i位清0 ， |= 1 << i第i为改1
+	//	data |= 1 << i-
+	//	fmt.Printf("%b\n",data)
+	//	fmt.Printf("%d\n",data)
+	//	if i == 22 {
+	//		data &= ^(1 << 5)
+	//		fmt.Printf("abc%b\n",data)
+	//	}
+	//
+	//}
 
 	//str := "1010000000"
 	//a := str[0]
@@ -66,7 +76,13 @@ func main() {
 	//fmt.Println(BinaryConversionDecimal("1010"))
 	//fmt.Println(DecimalConversionBinary(BinaryConversionDecimal("1010")))
 	//fmt.Println(len(channelManager.GetchannelManager()))
-	//<-make(chan struct{})
+	//var re = regexp.MustCompile(`(?m)^[0-9]{2}$`)
+	//var str = `213`
+	//
+	//for i, match := range re.FindAllString(str, -1) {
+	//	fmt.Println(match, "found at index", i)
+	//}
+	<-make(chan struct{})
 }
 
 func BinaryConversionDecimal(binary string) int32 {

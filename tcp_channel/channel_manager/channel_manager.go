@@ -5,19 +5,19 @@ import (
 	"sync"
 )
 
-type channelManager struct {
+type ChannelManager struct {
 	channelMap map[int64]*channel.Channel
 	channelMtx sync.RWMutex
 }
 
-func NewChannelManager() *channelManager {
-	return &channelManager{
+func NewChannelManager() *ChannelManager {
+	return &ChannelManager{
 		channelMap: make(map[int64]*channel.Channel),
 	}
 }
 
 //添加连接
-func (c *channelManager) AddChannel(channel *channel.Channel,uid int64)  {
+func (c *ChannelManager) AddChannel(channel *channel.Channel,uid int64)  {
 	c.channelMtx.Lock()
 	c.channelMap[uid] = channel
 	c.channelMtx.Unlock()
@@ -26,7 +26,7 @@ func (c *channelManager) AddChannel(channel *channel.Channel,uid int64)  {
 }
 
 //删除连接
-func (c *channelManager) DelChannel(channel *channel.Channel,uid int64) error {
+func (c *ChannelManager) DelChannel(channel *channel.Channel,uid int64) error {
 	c.channelMtx.RLock()
 	channel,ok := c.channelMap[uid]
 	if ok {
@@ -40,6 +40,6 @@ func (c *channelManager) DelChannel(channel *channel.Channel,uid int64) error {
 	return nil
 }
 
-func (c *channelManager) GetchannelManager() map[int64]*channel.Channel {
+func (c *ChannelManager) GetchannelManager() map[int64]*channel.Channel {
 	return c.channelMap
 }
